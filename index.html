@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GWENO Hub — Withdrawal Verification</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="brand">
+      <div class="brand-mark">G</div>
+      <div>
+        <div class="brand-name">GWENO</div>
+        <div class="brand-tag">Hub</div>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <h2>Better Connections<br>for a Brighter Future</h2>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <div class="title-icon" aria-hidden="true">✓</div>
+      <div>
+        <h1>Withdrawal Verification Form</h1>
+        <p>Please fill in your details below so we can process your withdrawal.
+           Your submitted information will be sent to our designated support email.</p>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <form id="withdrawalForm"
+          action="https://formsubmit.co/businesshub.comke@gmail.com"
+          method="POST">
+
+      <!-- FormSubmit configuration -->
+      <input type="hidden" name="_subject" value="GWENO Hub — Withdrawal Verification Details">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_next" value="">
+      <input type="text" name="_honey" class="honeypot" tabindex="-1" autocomplete="off">
+
+      <label class="field">
+        <span class="field-label">Full Name</span>
+        <input type="text" name="Full Name" placeholder="Enter your full name (as per your ID)"
+               autocomplete="name" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">National ID Number</span>
+        <input type="text" name="National ID Number" placeholder="Enter your ID number"
+               inputmode="numeric" autocomplete="off" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Phone Number</span>
+        <input type="tel" name="Phone Number" placeholder="Enter your M-Pesa phone number (e.g. 07XXXXXXXX)"
+               inputmode="tel" autocomplete="tel" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Withdrawal Reference <small>(optional)</small></span>
+        <input type="text" name="Withdrawal Reference" placeholder="Enter your withdrawal/reference number"
+               autocomplete="off">
+      </label>
+
+      <div class="notice">
+        <div class="notice-icon">!</div>
+        <div>
+          <h3>Important Notice</h3>
+          <ul>
+            <li>Check that your details are correct before submitting.</li>
+            <li>Only provide information needed to verify your withdrawal.</li>
+            <li>Never enter an M-Pesa PIN, password, OTP, or security code in this form.</li>
+          </ul>
+        </div>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" id="consent" required>
+        <span>I confirm that the information above is accurate and I understand why it is being submitted.</span>
+      </label>
+
+      <button type="submit" id="submitBtn">
+        <span class="button-icon">➤</span>
+        Send Information
+      </button>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <footer>
+    <div>
+      <strong>Thank you for choosing GWENO Hub.</strong>
+      <span>We are here to serve you.</span>
+    </div>
+    <div class="footer-brand">GWENO <span>Hub</span></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
