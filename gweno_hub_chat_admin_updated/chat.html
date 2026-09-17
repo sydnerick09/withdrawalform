@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GWENO Hub — Chat & Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="chat-header">
+    <div class="brand"><div class="brand-mark">G</div><div><div class="brand-name">GWENO</div><div class="brand-tag">Hub</div></div></div>
+    <div class="header-actions">
+      <button id="adminBtn" class="secondary-btn">Admin Panel</button>
+      <a class="secondary-btn" href="index.html">Withdrawal</a>
+    </div>
+  </header>
+
+  <main class="chat-layout">
+    <section class="chat-card" aria-label="Chat">
+      <div class="chat-title">
+        <div><h1>Chat</h1><p>Send messages and attach documents or photos.</p></div>
+        <span class="online-dot">● Online</span>
+      </div>
+
+      <div id="messages" class="messages" aria-live="polite">
+        <div class="empty">No messages yet. Start a conversation.</div>
+      </div>
+
+      <form id="chatForm" class="composer">
+        <label for="attachment" class="attach-btn" title="Attach a photo or document">📎 Attach</label>
+        <input id="attachment" type="file" hidden
+               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip">
+        <div class="compose-main">
+          <textarea id="messageInput" rows="2" maxlength="2000" placeholder="Write a message..." required></textarea>
+          <div id="attachmentInfo" class="attachment-info"></div>
+          <div class="compose-note">Photos and documents only • Maximum file size: 5 MB • Videos are not allowed</div>
+        </div>
+        <button class="send-btn" type="submit">Send</button>
+      </form>
+    </section>
+
+    <aside class="users-card">
+      <div class="card-heading"><h2>Users</h2><span id="userCount">0</span></div>
+      <div id="userList"></div>
+    </aside>
+  </main>
+
+  <dialog id="adminDialog">
+    <div class="admin-panel">
+      <div class="admin-top"><div><h2>Admin Panel</h2><p>Platform messages and registered users.</p></div><button id="closeAdmin" class="icon-btn">✕</button></div>
+      <div class="admin-tabs">
+        <button class="tab active" data-tab="adminMessages">Messages</button>
+        <button class="tab" data-tab="adminUsers">Users</button>
+      </div>
+      <section id="adminMessages" class="admin-section"></section>
+      <section id="adminUsers" class="admin-section hidden"></section>
+    </div>
+  </dialog>
+
+<script>
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const VIDEO_RE = /^video\\//i;
+const allowedExt = /\.(pdf|doc|docx|xls|xlsx|txt|csv|zip)$/i;
+const state = {
+  users: JSON.parse(localStorage.getItem('gwenoUsers') || '[]'),
+  messages: JSON.parse(localStorage.getItem('gwenoMessages') || '[]')
+};
+
+function save() {
+  localStorage.setItem('gwenoUsers', JSON.stringify(state.users));
+  localStorage.setItem('gwenoMessages', JSON.stringify(state.messages));
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function render() {
+  const messages = document.getElementById('messages');
+  messages.innerHTML = state.messages.length ? state.messages.map(m => `
+    <article class="message ${m.role === 'admin' ? 'admin-message' : ''}">
+      <div class="message-meta"><strong>${escapeHtml(m.user)}</strong><time>${new Date(m.time).toLocaleString()}</time></div>
+      ${m.text ? `<p>${escapeHtml(m.text)}</p>` : ''}
+      ${m.file ? `<div class="file-card">📎 <span>${escapeHtml(m.file.name)}</span><small>${(m.file.size/1024/1024).toFixed(2)} MB</small></div>` : ''}
+    </article>`).join('') : '<div class="empty">No messages yet. Start a conversation.</div>';
+
+  document.getElementById('userCount').textContent = state.users.length;
+  document.getElementById('userList').innerHTML = state.users.length ? state.users.map(u =>
+    `<div class="user-row"><span class="avatar">${escapeHtml(u.name[0] || '?')}</span><div><strong>${escapeHtml(u.name)}</strong><small>${escapeHtml(u.email || 'No email')}</small></div></div>`
+  ).join('') : '<div class="empty">No registered users.</div>';
+
+  document.getElementById('adminMessages').innerHTML = `<div class="stat">Total messages <strong>${state.messages.length}</strong></div>` +
+    (state.messages.length ? state.messages.map(m => `<div class="admin-row"><div><strong>${escapeHtml(m.user)}</strong> <small>${new Date(m.time).toLocaleString()}</small><p>${escapeHtml(m.text || '')}</p>${m.file ? `<span class="file-pill">📎 ${escapeHtml(m.file.name)}</span>` : ''}</div></div>`).join('') : '<div class="empty">No messages.</div>');
+
+  document.getElementById('adminUsers').innerHTML = `<div class="stat">Registered users <strong>${state.users.length}</strong></div>` +
+    (state.users.length ? state.users.map(u => `<div class="admin-row"><strong>${escapeHtml(u.name)}</strong><div>${escapeHtml(u.email || 'No email')}</div><small>Joined ${new Date(u.joined).toLocaleString()}</small></div>`).join('') : '<div class="empty">No users.</div>');
+}
+function registerDemoUser() {
+  if (!state.users.some(u => u.email === 'demo@gweno.test')) {
+    state.users.push({name:'Demo User', email:'demo@gweno.test', joined:Date.now()});
+    save();
+  }
+}
+document.getElementById('attachment').addEventListener('change', e => {
+  const file = e.target.files[0], info = document.getElementById('attachmentInfo');
+  info.textContent = '';
+  if (!file) return;
+  if (VIDEO_RE.test(file.type)) { e.target.value=''; info.textContent='Videos are not allowed. Please choose a photo or document.'; return; }
+  if (file.size >= MAX_FILE_SIZE) { e.target.value=''; info.textContent='File must be below 5 MB.'; return; }
+  if (!file.type.startsWith('image/') && !allowedExt.test(file.name)) {
+    e.target.value=''; info.textContent='Only photos and supported documents can be attached.'; return;
+  }
+  info.textContent = `Attached: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+});
+document.getElementById('chatForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = document.getElementById('messageInput').value.trim();
+  const input = document.getElementById('attachment'), file = input.files[0];
+  if (!text && !file) return;
+  if (file && (VIDEO_RE.test(file.type) || file.size >= MAX_FILE_SIZE)) return;
+  state.messages.push({id:crypto.randomUUID(), user:'Current User', role:'user', text, time:Date.now(),
+    file:file ? {name:file.name,size:file.size,type:file.type} : null});
+  if (!state.users.some(u => u.name === 'Current User')) state.users.push({name:'Current User', email:'', joined:Date.now()});
+  save(); e.target.reset(); document.getElementById('attachmentInfo').textContent=''; render();
+});
+document.getElementById('adminBtn').onclick = () => { render(); document.getElementById('adminDialog').showModal(); };
+document.getElementById('closeAdmin').onclick = () => document.getElementById('adminDialog').close();
+document.querySelectorAll('.tab').forEach(btn => btn.onclick = () => {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(btn.dataset.tab).classList.remove('hidden');
+});
+registerDemoUser(); render();
+</script>
+</body>
+</html>
